@@ -1,0 +1,14 @@
+Hello, welcome to my project
+
+I want to create a mock porgram that utilizes python, SQL, and PowerBI to move, store, select, and display mortgage data,
+for the purposes of showing these skills on a resume / in an interview
+
+Things I need to do:
+
+create a python script that pulls in data from an excel file
+convert that information into a SQL database
+use SQL to pull specific data
+push that data into PowerBI
+create 4 graphs in PowerBI based on this data
+
+# got held up by logging into PowerBI
