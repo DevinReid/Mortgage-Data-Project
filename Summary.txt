@@ -12,3 +12,12 @@ push that data into PowerBI
 create 4 graphs in PowerBI based on this data
 
 # got held up by logging into PowerBI
+
+8/5/2024
+
+got logged into to pwer PowerBI
+Got ODBC driver connected and configured
+Connected data folder to ODBC in PowerBI
+
+need to pull some specific data from my python code and try to get it into the PowerBI Shell
+
