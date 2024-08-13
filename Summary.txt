@@ -21,3 +21,8 @@ Connected data folder to ODBC in PowerBI
 
 need to pull some specific data from my python code and try to get it into the PowerBI Shell
 
+
+8/12
+i added some more charts into powewrBI looking into drill though
+
+need to fix db with double branch problem
