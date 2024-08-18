@@ -1,8 +1,3 @@
 -- SQLite
-SELECT AmortTerm, COUNT(*) AS LoanCount
-FROM mortgages
-GROUP BY AmortTerm
-ORDER BY AmortTerm;
-
-
+SELECT CAST(LoanID AS INTEGER) AS LoanID from mortgages
 
