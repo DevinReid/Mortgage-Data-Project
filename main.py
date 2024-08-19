@@ -219,6 +219,49 @@ def add_range_column_FICO():
     print("Data with SortOrderFICOScoreBand and FICOScoreBand column has been successfully updated in the SQL database")
 
 
+def add_calculation_column_ProfitMarginPercentage():
+    global source_connect, source_cursor
+
+    if source_connect is None:
+        initialize_db()
+
+    df =pd.read_sql_query("SELECT * FROM mortgages", source_connect)
+
+    if 'ProfitMarginPercentage' in df.columns and df['ProfitMarginPercentage'].notnull().all():
+        print("ProfitMarginPercentage column already exist with data. Skipping execution.")
+        return
+
+
+
+    df['ProfitMarginPercentage'] = ((df['InvestorExpectedPrice'] - df['MortgageCost'])/df['InvestorExpectedPrice'])
+
+
+    print(df['ProfitMarginPercentage'].head())
+    
+
+    try:
+        source_cursor.execute('ALTER TABLE mortgages ADD COLUMN ProfitMarginPercentage REAL')
+    except sqlite3.OperationalError:
+        # Column already exists, no need to add
+        pass
+
+
+
+    for index, row in df.iterrows():
+        source_cursor.execute('''
+                        UPDATE mortgages
+                        SET ProfitMarginPercentage = ?
+                        WHERE RowID = ?
+                        ''', (row['ProfitMarginPercentage'], index + 1))
+        
+    
+        
+    source_connect.commit()
+    
+
+    print("Data with ProfitMarginPercentage column has been successfully updated in the SQL database")
+
+
 # def chart_one():
 #     source_cursor.execute('''
 #         SELECT AmortTerm, COUNT(*) AS LoanCount
@@ -319,6 +362,8 @@ add_range_column_MortgageAmount()
 add_range_column_MortgageRate()
 
 add_range_column_FICO()
+
+add_calculation_column_ProfitMarginPercentage()
 
 # chart_one()
 # chart_two()
