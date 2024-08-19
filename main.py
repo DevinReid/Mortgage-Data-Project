@@ -160,6 +160,64 @@ def add_range_column_MortgageRate():
     print("Data with MortgageRateBand column has been successfully updated in the SQL database")
 
     
+def add_range_column_FICO():
+    global source_connect, source_cursor
+
+    if source_connect is None:
+        initialize_db()
+
+    df =pd.read_sql_query("SELECT * FROM mortgages", source_connect)
+
+    if 'FICOScoreBand' in df.columns and df['FICOScoreBand'].notnull().all():
+        print("FICOScoreBand and SortOrderFICOScoreBand columns already exist with data. Skipping execution.")
+        return
+
+    column_to_catagorize ='FICO'
+    
+    bin_edges = [300,580,620,650,700,740,800]
+    bin_labels = ['300 - 579', '580 - 619', '620 - 649', '650 - 699', '700 - 739', '740 - 800']
+
+
+    df['FICOScoreBand'] = pd.cut(df[column_to_catagorize], bins=bin_edges, labels=bin_labels, include_lowest=True)
+    
+
+    try:
+        source_cursor.execute('ALTER TABLE mortgages ADD COLUMN FICOScoreBand TEXT')
+    except sqlite3.OperationalError:
+        # Column already exists, no need to add
+        pass
+
+
+    def calculate_sort_order(range_label):
+        if pd.isnull(range_label):
+            return np.nan
+        
+        min_value= float(range_label.split(' - ')[0])
+        max_value = float(range_label.split(' - ')[1]) * 1000
+        return min_value + (max_value - min_value)/2
+    
+    df['SortOrderFICOScoreBand'] = df['FICOScoreBand'].apply(calculate_sort_order)
+
+    try:
+        source_cursor.execute('ALTER TABLE mortgages ADD COLUMN SortOrderFICOScoreBand REAL')
+    except sqlite3.OperationalError:
+        # Column already exists, no need to add
+        pass
+
+    for index, row in df.iterrows():
+        source_cursor.execute('''
+                        UPDATE mortgages
+                        SET FICOScoreBand = ?, SortOrderFICOScoreBand = ?
+                        WHERE RowID = ?
+                        ''', (row['FICOScoreBand'], row['SortOrderFICOScoreBand'], index + 1))
+        
+    
+        
+    source_connect.commit()
+    
+
+    print("Data with SortOrderFICOScoreBand and FICOScoreBand column has been successfully updated in the SQL database")
+
 
 # def chart_one():
 #     source_cursor.execute('''
@@ -259,6 +317,8 @@ create_main_table()
 add_range_column_MortgageAmount()
 
 add_range_column_MortgageRate()
+
+add_range_column_FICO()
 
 # chart_one()
 # chart_two()
