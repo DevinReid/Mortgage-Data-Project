@@ -54,6 +54,10 @@ def add_range_column_MortgageAmount():
 
     df =pd.read_sql_query("SELECT * FROM mortgages", source_connect)
 
+    if 'MortgageAmountRange' in df.columns and df['MortgageAmountRange'].notnull().all():
+        print("MortgageAmountRange and SortOrderMortgageAmount columns already exist with data. Skipping execution.")
+        return
+
     column_to_catagorize ='MortgageAmount'
     num_bins = 6
     bin_edges = np.linspace(df[column_to_catagorize].min(), df[column_to_catagorize].max(), num_bins + 1)
@@ -100,11 +104,62 @@ def add_range_column_MortgageAmount():
 
     df_updated = pd.read_sql_query("SELECT * FROM mortgages", source_connect)
 
-    # Print data types of the updated DataFrame
-    print("Data types with new range column:")
-    print(df_updated.dtypes)
 
-    print("Data with range column has been successfully updated in the SQL database")
+    print("Data with MortgageAmountRange column has been successfully updated in the SQL database")
+
+
+def add_range_column_MortgageRate():
+    global source_connect, source_cursor, db_path
+
+    if source_connect is None:
+        initialize_db()
+
+    df = pd.read_sql_query("SELECT * FROM mortgages", source_connect)
+
+    if 'MortgageRateBand' in df.columns and df['MortgageRateBand'].notnull().all():
+        print("MortgageRateBand column already exists with data. Skipping execution.")
+        return
+
+    column_to_catagorize = 'MortgageRate'
+
+    bins =np.arange(5.5, 9.0, 0.5)
+    labels =[f'{bins[i]}% - {bins[i+1]}%' for i in range(len(bins)-1)]
+
+    df['MortgageRateBand'] = pd.cut(df[column_to_catagorize], bins=bins, labels=labels, include_lowest=True)
+
+    try:
+        source_connect.execute('ALTER TABLE mortgages ADD COLUMN MortgageRateBand TEXT')
+    except sqlite3.OperationalError:
+        pass
+
+    def calculate_sort_order(range_label):
+        if pd.isnull(range_label):
+            return np.nan
+        
+        min_value= float(range_label.split(' - ')[0].replace('%', '')) 
+        max_value = float(range_label.split(' - ')[1].replace('%', ''))
+        return min_value + (max_value - min_value)/2
+    
+    df['SortOrderMortgageRateBand'] = df['MortgageRateBand'].apply(calculate_sort_order)
+
+    try: 
+        source_connect.execute('ALTER TABLE mortgages ADD COLUMN SortORderMortgageRateBand REAL')
+    except sqlite3.OperationalError:
+        pass
+
+    for index, row in df.iterrows():
+        source_cursor.execute('''
+                              UPDATE mortgages
+                              SET MortgageRateBand = ?, SortOrderMortgageRateBand = ?
+                              WHERE RowID = ?
+                              ''', (row['MortgageRateBand'], row['SortOrderMortgageRateBand'], index + 1))
+        
+        
+    source_connect.commit()
+
+    print("Data with MortgageRateBand column has been successfully updated in the SQL database")
+
+    
 
 # def chart_one():
 #     source_cursor.execute('''
@@ -202,6 +257,8 @@ initialize_db()
 create_main_table()
 
 add_range_column_MortgageAmount()
+
+add_range_column_MortgageRate()
 
 # chart_one()
 # chart_two()
