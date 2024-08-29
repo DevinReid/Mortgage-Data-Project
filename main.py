@@ -1,12 +1,13 @@
 import pandas as pd
 import numpy as np
 import sqlite3
+import random
 from sqlalchemy import create_engine
 print(pd.__version__)
 print("Hello World")
 
-file_path = r"C:\Users\Dreid\Documents\Projects\MortgageData\sample data.xlsx"
-db_path = r'C:\Users\Dreid\Documents\Projects\MortgageData\mortgage_data.db'
+file_path = r"C:\Users\Dreid\Desktop\Brain\Projects\MortgageData\sample data.xlsx"
+db_path = r'C:\Users\Dreid\Desktop\Brain\Projects\MortgageData\mortgage_data.db'
 
 source_connect = None
 source_cursor = None
@@ -261,98 +262,101 @@ def add_calculation_column_ProfitMarginPercentage():
 
     print("Data with ProfitMarginPercentage column has been successfully updated in the SQL database")
 
+def edit_data_for_charts_InvestorPrice():
+    global source_connect, source_cursor
 
-# def chart_one():
-#     source_cursor.execute('''
-#         SELECT AmortTerm, COUNT(*) AS LoanCount
-#         FROM mortgages
-#         GROUP BY AmortTerm
-#         ORDER BY AmortTerm; ''')
+    if source_connect == None:
+        initialize_db()
 
-#     data = source_cursor.fetchall()
+    df = pd.read_sql_query("SELECT * FROM mortgages", source_connect)
 
-#     source_cursor.execute('''
-#         CREATE TABLE IF NOT EXISTS AmortTermLoanCount (
-#             AmortTerm INTEGER,
-#             LoanCount INTEGER
-#         )
-#     ''')
+    investor_expected_price = 'InvestorExpectedPrice'
+    mortgage_cost_column  = 'MortgageCost'
 
-#     # Insert the fetched data into the new table
-#     source_cursor.executemany('''
-#         INSERT INTO AmortTermLoanCount (AmortTerm, LoanCount)
-#         VALUES (?, ?)
-#     ''', data)
+    # source_cursor.execute(f"SELECT id, {mortgage_cost} FROM mortgages WHERE {investor_expected_price} IS NULL")
+    # rows = source_cursor.fetchall()
 
-#     # Commit the changes and close the connections
-#     source_connect.commit()
-#     source_connect.close()
+    empty_cells = df[investor_expected_price].isna()
 
-
-#     print("Data Transfer ONE Sucess")
-
-
-# # def chart_two():
-# #     source_connect = sqlite3.connect('mortgage_data.db')
-# #     source_cursor = source_connect.cursor()
-
-# #     source_cursor.execute('''
-# #         SELECT Branch, COUNT(*) as total_loans
-# #         FROM mortgages
-# #         GROUP BY Branch ''')
-    
-# #     df = pd.read_sql_query('''
-# #                             SELECT Branch, COUNT (*) as total_loans
-# #                             FROM mortgages
-# #                             GROUP BY Branch ''', source_connect)
-
-# #     df['percentage'] = (df['total_loans'] / df['total_loans'].sum()) * 100
-
-# #     source_cursor.execute('''
-# #         CREATE TABLE IF NOT EXISTS  BranchLoanCount (
-# #         Branch TEXT,
-# #         total_loans INTEGER
-# #         percentage REAL)
-# #         ''')
+    for index, row in df[empty_cells].iterrows():
+       
+        mortgage_cost = row[mortgage_cost_column]
+        random_value = round(random.uniform(0.1, 3.0), 1)
+        new_value = 1 + mortgage_cost +random_value
+        df.at[index,investor_expected_price] = new_value
         
-# #     source_connect.commit
-
-# #     df.to_sql('BranchLoanCount', source_connect, if_exists='replace', index=False)
-
-# #     source_connect.close()
-
-# #     print("Data transfer TWO sucess")
-
-# # def chart_three():
-#     source_connect =sqlite3.connect('mortgage_data.db')
-#     source_cursor = source_connect.cursor()
-
-#     source_cursor.execute('''
-#                         SELECT ClientLoanProgram, COUNT(*) as count
-#                         FROM mortgages
-#                         GROUP BY ClientLoanProgram
-#                           ''')
     
-#     df = pd.read_sql_query('''
-#                         SELECT ClientLoanProgram, COUNT(*) as count
-#                         FROM mortgages
-#                         GROUP BY ClientLoanProgram
-#                           ''', source_connect)
-    
-#     source_cursor.execute('''
-#                           CREATE TABLE IF NOT EXISTS LoanProgramCount (
-#                           ClientLoanProgram TEXT,
-#                           count INTEGER
-                        
-#                           )''')
-    
-#     source_connect.commit
 
-#     df.to_sql('LoanProgramCount', source_connect, if_exists='replace',index=False)
-    
-#     source_connect.close()
 
-#     print("Loan Program Typer Counted and transfered into table successfully.")
+
+    df.to_sql('mortgages', source_connect, if_exists='replace', index= False)
+
+    print("Empty Cells Populated")
+
+    add_calculation_column_ProfitMarginPercentage()
+
+
+    source_connect.commit()
+
+def add_column_LoanOfficer():
+    global source_connect, source_cursor
+
+    branch_officers = {
+        'The Cottonport Bank': [
+            'M. Reed', 'S. Morgan', 'J. Patel', 'E. Grant', 'R. Foster',
+            'O. Diaz', 'T. James', 'A. Bennett'
+        ],
+        'WINNSBORO STATE BANK & TRUST COMPANY': [
+            'J. Ward', 'K. Brooks', 'M. Cooper', 'B. Hughes', 'A. Coleman',
+            'J. Parker', 'L. Phillips'
+        ],
+        'Progressive Bank': [
+            'E. Ross', 'M. Jenkins', 'C. Ramirez', 'A. Perry', 'N. Simmons',
+            'A. Fisher'
+        ],
+        'Merchants Bank of Indiana': [
+            'E. Collins', 'M. Price', 'N. Sanders', 'A. Murphy', 'D. Roberts',
+            'V. Gomez', 'L. Hill'
+        ],
+        'Marion State Bank': [
+            'B. Rogers', 'E. Howard', 'C. Hayes', 'C. Richardson', 'J. Ward',
+            'L. Martinez', 'J. Mitchell'
+        ],
+        'First State Bank of the South, Inc': [
+            'A. Carter', 'H. Kelly', 'W. White', 'S. Green', 'D. Turner',
+            'E. Thomas'
+        ],
+        'First Bank': [
+            'A. Thompson', 'M. Brown', 'I. Lee', 'A. Wright', 'G. Hall',
+            'C. Moore'
+        ],
+        'Farmers-Merchants Bank of Illinois': [
+            'Z. Johnson', 'H. Walker', 'E. Baker', 'S. Wood', 'L. Perez',
+            'J. Collins'
+        ],
+        'Citizens Savings Bank': [
+            'C. King', 'E. Butler', 'S. Price', 'J. Bell', 'H. Turner',
+            'O. Gray'
+        ]}
+
+    try:
+        source_cursor.execute("ALTER TABLE mortgages ADD COLUMN LoanOfficer TEXT;")
+        print("Column 'LoanOfficer' added")
+    except sqlite3.OperationalError:
+        print("Column 'LoanOfficer' may already exist")
+
+    source_cursor.execute("SELECT LoanID, Branch FROM mortgages WHERE LoanOfficer IS NULL OR LoanOfficer = '';")
+    rows = source_cursor.fetchall()
+
+    for row in rows:
+        row_id, branch = row
+        if branch in branch_officers:
+            loan_officer = random.choice(branch_officers[branch])
+            source_cursor.execute("UPDATE mortgages SET LoanOfficer = ? WHERE LoanID = ?;", (loan_officer,row_id))
+
+    source_connect.commit()
+    print("Loan officer names have been assigned to blank cells.")
+
 
 initialize_db()
 create_main_table()
@@ -365,8 +369,10 @@ add_range_column_FICO()
 
 add_calculation_column_ProfitMarginPercentage()
 
-# chart_one()
-# chart_two()
-# chart_three()
+#Plump up the sample data we received
+
+edit_data_for_charts_InvestorPrice()
+
+add_column_LoanOfficer()
 
 source_connect.close()
