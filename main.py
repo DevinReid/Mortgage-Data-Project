@@ -3,6 +3,7 @@ import numpy as np
 import sqlite3
 import random
 from sqlalchemy import create_engine
+import populateDB as popDB
 print(pd.__version__)
 print("Hello World")
 
@@ -33,6 +34,7 @@ def create_main_table():
 
         #This looks at all of the columns in my excel file and checks for the type int64 and converts it to int 32 so powerBI can read it
         for column in df.select_dtypes(include=['int64']).columns:
+            
             df[column] = df [column].astype('int16')
 
 
@@ -361,6 +363,7 @@ def add_column_LoanOfficer():
 initialize_db()
 create_main_table()
 
+popDB.main()
 add_range_column_MortgageAmount()
 
 add_range_column_MortgageRate()
