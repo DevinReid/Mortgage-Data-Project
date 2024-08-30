@@ -96,16 +96,19 @@ def gen_InvestorExpectedPrice():
     rand_price = random.uniform(103.788, 107.888)
     return rand_price
 
+
 def populate_spreadsheet():
     random_effective_date, random_expire_date = generate_LockEffectiveDate_and_LockExpDate()
+    mortgage_amount = generate_MortgageAmount()
     return {
         'DataDate': set_DataDate(),
         'LoanID':generate_LoanID(),
         'LoanProgram': generate_LoanProgram(),
         'MortgageRate' : generate_InterestRate(),
-        'MortgageAmount':generate_MortgageAmount(),
+        'MortgageAmount':mortgage_amount,
         'LockEffectiveDate': random_effective_date,
         'LockExpDate': random_expire_date,
+        'OriginalBalance': mortgage_amount,
         'AmortTerm' : generate_AmortTerm(),
         'BackEndRatio' : generate_BackEndRatio(),
         'Branch' : generate_branch(),
@@ -130,3 +133,4 @@ def insert_data(num_rows):
 def main():
     initialize_db()
     insert_data(300)
+
