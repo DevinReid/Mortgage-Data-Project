@@ -1,0 +1,28 @@
+Hello, welcome to my project
+
+I want to create a mock porgram that utilizes python, SQL, and PowerBI to move, store, select, and display mortgage data,
+for the purposes of showing these skills on a resume / in an interview
+
+Things I need to do:
+
+create a python script that pulls in data from an excel file
+convert that information into a SQL database
+use SQL to pull specific data
+push that data into PowerBI
+create 4 graphs in PowerBI based on this data
+
+# got held up by logging into PowerBI
+
+8/5/2024
+
+got logged into to pwer PowerBI
+Got ODBC driver connected and configured
+Connected data folder to ODBC in PowerBI
+
+need to pull some specific data from my python code and try to get it into the PowerBI Shell
+
+
+8/12
+i added some more charts into powewrBI looking into drill though
+
+need to fix db with double branch problem
