@@ -7,6 +7,9 @@ import populateDB as popDB
 print(pd.__version__)
 print("Hello World")
 
+"""  This script creates a database of fictitious mortgage data  """
+
+
 file_path = r"C:\Users\Dreid\Desktop\Brain\Projects\MortgageData\sample data.xlsx"
 db_path = r'C:\Users\Dreid\Desktop\Brain\Projects\MortgageData\mortgage_data.db'
 
@@ -14,11 +17,14 @@ source_connect = None
 source_cursor = None
 
 def initialize_db():
-    global source_cursor, source_connect, db_path
+    ''' connect SQL server '''
+    global source_cursor, source_connect, db_path  
     source_connect = sqlite3.connect(db_path)
     source_cursor = source_connect.cursor()
 
 def create_main_table():
+    ''' Create Table and .db file '''
+
     global source_connect, source_cursor
    
     source_cursor.execute('''
@@ -50,6 +56,8 @@ def create_main_table():
 
 
 def add_range_column_MortgageAmount():
+
+    """ Generate Mortgage price data  """
     global source_connect, source_cursor
 
     if source_connect is None:
@@ -112,6 +120,8 @@ def add_range_column_MortgageAmount():
 
 
 def add_range_column_MortgageRate():
+    """ Generate mortgage rate data  """
+
     global source_connect, source_cursor, db_path
 
     if source_connect is None:
@@ -164,6 +174,8 @@ def add_range_column_MortgageRate():
 
     
 def add_range_column_FICO():
+    """ Add fico score dtata by bands  """
+
     global source_connect, source_cursor
 
     if source_connect is None:
@@ -223,6 +235,9 @@ def add_range_column_FICO():
 
 
 def add_calculation_column_ProfitMarginPercentage():
+
+    """ calculate profit margins  """
+
     global source_connect, source_cursor
 
     if source_connect is None:
@@ -265,6 +280,7 @@ def add_calculation_column_ProfitMarginPercentage():
     print("Data with ProfitMarginPercentage column has been successfully updated in the SQL database")
 
 def edit_data_for_charts_InvestorPrice():
+    """ Calculate Investor Pricing data  """
     global source_connect, source_cursor
 
     if source_connect == None:
@@ -301,6 +317,8 @@ def edit_data_for_charts_InvestorPrice():
     source_connect.commit()
 
 def add_column_LoanOfficer():
+    """ Generate Loan officer data """
+
     global source_connect, source_cursor
 
     branch_officers = {
